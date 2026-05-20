@@ -188,6 +188,9 @@
     }
 }
 
+
+
+
     @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(24px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -233,43 +236,6 @@
     }
     .skip-link:focus {
       top: 10px;
-    }
-
-    /* IMAGE PROTECTION - Prevents downloading, saving, previewing */
-    .protected-image {
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-drag: none;
-      -webkit-tap-highlight-color: transparent;
-      position: relative;
-    }
-    
-    /* Disable right-click on all images */
-    img {
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-drag: none;
-      -webkit-touch-callout: none;
-    }
-    
-    /* Add invisible overlay on images to prevent context menu */
-    .image-protector {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: transparent;
-      z-index: 10;
-      pointer-events: all;
-      cursor: default;
-    }
-    
-    /* Prevent long-press save on mobile */
-    .hero-image, .nav-avatar {
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
     }
 
     /* Dynamic background layer (keeps content stack above) */
@@ -337,6 +303,12 @@
     #timeline .milestone-card { opacity: 0; transform: translateY(12px); border: 1px solid rgba(148,163,184,0.45); transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.4s ease, border-color 0.4s ease; }
     #timeline .milestone-card.show { opacity: 1; transform: translateY(0); }
     #timeline .milestone-card.show:hover { border-color: rgba(56,189,248,0.85); box-shadow: 0 0 25px rgba(56,189,248,0.35); }
+
+    #lightboxOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    #lightboxOverlay.open { opacity: 1; pointer-events: auto; }
+    .lightbox-inner { max-width: 90vw; max-height: 85vh; border-radius: 20px; overflow: hidden; background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.96)); border: 1px solid rgba(148,163,184,0.65); box-shadow: 0 25px 60px rgba(15,23,42,0.95); transform: scale(0.95); opacity: 0; animation: none; }
+    #lightboxOverlay.open .lightbox-inner { animation: lbZoomIn 0.32s ease forwards; }
+    @keyframes lbZoomIn { 0% { opacity: 0; transform: scale(0.94) translateY(8px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
     .reveal { opacity: 0; transform: translateY(20px); }
     .reveal.revealed { opacity: 1; transform: translateY(0); transition: opacity 0.6s ease, transform 0.6s ease; }
@@ -430,8 +402,9 @@ class="fixed top-0 left-0 w-full z-50 px-4 py-4">
          class="relative flex items-center gap-4 group"
          aria-label="Home">
 
-        <!-- Image with protection -->
+        <!-- Image -->
         <div class="relative">
+
           <!-- Glow -->
           <div class="absolute inset-0
                       rounded-full
@@ -442,13 +415,19 @@ class="fixed top-0 left-0 w-full z-50 px-4 py-4">
                       transition duration-500">
           </div>
 
-          <!-- Protected Avatar -->
-          <div class="relative w-12 h-12 rounded-full overflow-hidden border border-cyan-400/30 shadow-[0_0_30px_rgba(34,211,238,0.25)]">
+          <!-- Avatar -->
+          <div class="relative
+                      w-12 h-12
+                      rounded-full
+                      overflow-hidden
+                      border border-cyan-400/30
+                      shadow-[0_0_30px_rgba(34,211,238,0.25)]">
+
             <img src="assets/images/profile-main.jpg"
                  alt="Prince"
-                 class="w-full h-full object-cover transition duration-700 group-hover:scale-110 protected-image"
-                 draggable="false"
-                 oncontextmenu="return false">
+                 class="w-full h-full object-cover
+                        transition duration-700
+                        group-hover:scale-110">
           </div>
         </div>
 
@@ -839,7 +818,7 @@ if (mobileToggle && mobileNav) {
 
       </div>
 
-      <!-- RIGHT CONTENT - Protected Hero Image -->
+      <!-- RIGHT CONTENT -->
       <div class="relative flex justify-center md:justify-end">
 
         <!-- Glow -->
@@ -851,20 +830,18 @@ if (mobileToggle && mobileNav) {
         border border-cyan-400/20 rounded-full
         animate-spin-slow"></div>
 
-        <!-- Protected IMAGE -->
+        <!-- IMAGE -->
         <img
         src="assets/images/profile-main.jpg"
         alt="Vishnu Profile"
+
         class="hero-image relative
         w-[280px] h-[280px]
         md:w-[340px] md:h-[340px]
         rounded-full object-cover
         border border-cyan-400/30
-        shadow-[0_0_60px_rgba(34,211,238,0.35)]
-        protected-image"
-        draggable="false"
-        oncontextmenu="return false"
-        onselectstart="return false">
+
+        shadow-[0_0_60px_rgba(34,211,238,0.35)]">
 
       </div>
 
@@ -1657,7 +1634,7 @@ if (typeof gsap !== 'undefined') {
         </a>
 
         <a
-          href="https://beprince24.github.io/Ngcem/"
+          href="https://ngcem.vishnuvighas.in"
           target="_blank"
           class="inline-flex items-center px-4 py-2 text-xs font-medium rounded-full
                  bg-indigo-500 text-white
@@ -2036,7 +2013,36 @@ if (viewAllBtn) {
 </footer>
 </main>
 
-<!-- SCRIPTS: UI behavior, timeline, experience counter, IMAGE PROTECTION -->
+<!-- LIGHTBOX -->
+<div id="lightboxOverlay" aria-hidden="true">
+  <div class="lightbox-inner relative">
+    <span class="lightbox-close-btn" id="lightboxClose" role="button" tabindex="0" aria-label="Close lightbox">&times;</span>
+    <img id="lightboxImage" class="lightbox-img" src="" alt="Full view">
+    <div class="p-3 flex items-center justify-between gap-3">
+      <span class="text-[11px] text-slate-400">Photo from my Instagram.</span>
+      <a id="lightboxInstaLink" href="#" target="_blank" rel="noopener noreferrer" class="text-[12px] px-3 py-1.5 rounded-full border border-primary-500 text-primary-100">View on Instagram 🔗</a>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="videoModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70" aria-hidden="true" role="dialog" aria-label="Video player">
+  <div class="max-w-4xl w-full mx-4 bg-transparent rounded-xl overflow-hidden relative" role="document">
+    <button id="videoModalClose" class="absolute top-4 right-6 text-white text-2xl z-60" aria-label="Close video">×</button>
+    <div class="relative pb-[56.25%]">
+      <div id="videoContainer" class="absolute inset-0"></div>
+    </div>
+    <div class="p-3 text-xs text-slate-400 flex items-center justify-between">
+      <div>
+        <span id="videoRole" class="inline-block text-[12px] text-slate-300 mr-2"></span>
+        <span id="videoDesc">Video from my channel</span>
+      </div>
+      <a id="videoOnYouTube" href="#" target="_blank" rel="noopener noreferrer" class="text-primary-300 text-sm">Open on YouTube ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS: UI behavior, timeline, lightbox, experience counter, video modal -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     (function setHeaderOffset() {
@@ -2079,6 +2085,48 @@ if (viewAllBtn) {
       }
     }
 
+    /* LIGHTBOX (photo) */
+    const overlay = document.getElementById('lightboxOverlay');
+    const lbImage = document.getElementById('lightboxImage');
+    const lbLink  = document.getElementById('lightboxInstaLink');
+    const lbClose = document.getElementById('lightboxClose');
+    let previouslyFocused = null;
+
+    function openLightbox(src, instaUrl) {
+      if (!overlay || !lbImage || !lbLink) return;
+      previouslyFocused = document.activeElement;
+      lbImage.src = src;
+      lbLink.href = instaUrl || '#';
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      if (lbClose) lbClose.focus();
+    }
+    function closeLightbox() {
+      if (!overlay) return;
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      if (lbImage) lbImage.src = '';
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    }
+
+    const galleryImgs = document.querySelectorAll('.gallery-item img.thumb');
+    galleryImgs.forEach(img => {
+      img.addEventListener('click', () => {
+        const parent = img.closest('.gallery-item');
+        if (parent && parent.dataset && parent.dataset.videoId) return;
+        const fullSrc = img.getAttribute('data-full') || img.src;
+        const insta   = img.getAttribute('data-instagram') || '#';
+        openLightbox(fullSrc, insta);
+      });
+    });
+
+    if (lbClose) {
+      lbClose.addEventListener('click', closeLightbox);
+      lbClose.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeLightbox(); } });
+    }
+    if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) closeLightbox(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
     /* SCROLL REVEAL */
     const revealEls = document.querySelectorAll('.reveal');
     if ('IntersectionObserver' in window && revealEls.length) {
@@ -2109,43 +2157,6 @@ if (viewAllBtn) {
       updateExperience();
       setInterval(updateExperience, 24 * 60 * 60 * 1000);
     }
-
-    /* IMAGE PROTECTION - Prevents download, save, preview on all devices */
-    // Disable right-click on all images
-    const allImages = document.querySelectorAll('img');
-    allImages.forEach(img => {
-      // Disable right-click
-      img.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        return false;
-      });
-      
-      // Disable drag and drop
-      img.addEventListener('dragstart', (e) => {
-        e.preventDefault();
-        return false;
-      });
-      
-      // Disable touch and hold on mobile
-      img.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        return false;
-      });
-      
-      // Disable selecting
-      img.addEventListener('selectstart', (e) => {
-        e.preventDefault();
-        return false;
-      });
-    });
-
-    // Disable keyboard shortcuts for saving (Ctrl+S, Ctrl+Shift+S, etc.)
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P')) {
-        e.preventDefault();
-        return false;
-      }
-    });
   });
 </script>
 
